@@ -1,0 +1,358 @@
+import React, { useState } from 'react';
+
+const KratomQuiz = () => {
+  const [step, setStep] = useState(0);
+  const [answers, setAnswers] = useState({});
+  const [contact, setContact] = useState({
+    name: '',
+    company: '',
+    email: '',
+    volume: '',
+  });
+  const [showResults, setShowResults] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const questions = [
+    {
+      id: 'market',
+      question: 'Which market are you primarily serving?',
+      options: [
+        { id: 'us', label: 'United States' },
+        { id: 'europe', label: 'Europe' },
+        { id: 'asia', label: 'Asia/Pacific' },
+        { id: 'other', label: 'Other Regions' }
+      ]
+    },
+    {
+      id: 'business',
+      question: 'What best describes your business model?',
+      options: [
+        { id: 'brand', label: 'Established Kratom Brand' },
+        { id: 'manufacturer', label: 'Herbal Product Manufacturer' },
+        { id: 'whitelabel', label: 'White Label / Private Label' },
+        { id: 'distributor', label: 'Wholesale Distributor' },
+        { id: 'other', label: 'Other Business Type' }
+      ]
+    },
+    {
+      id: 'volume',
+      question: 'What monthly volume are you targeting?',
+      options: [
+        { id: 'small', label: '100kg - 1 ton' },
+        { id: 'medium', label: '1 ton - 10 tons' },
+        { id: 'large', label: '10 tons - 100 tons' },
+        { id: 'enterprise', label: '100+ tons' }
+      ]
+    },
+    {
+      id: 'priority',
+      question: 'What is your primary consideration when sourcing Kratom?',
+      options: [
+        { id: 'price', label: 'Competitive Pricing' },
+        { id: 'alkaloid', label: 'Alkaloid Content / Potency' },
+        { id: 'consistency', label: 'Consistency & Reliability' },
+        { id: 'ethics', label: 'Ethical Sourcing / Farmer Support' },
+        { id: 'compliance', label: 'Testing & Compliance Documentation' }
+      ]
+    },
+    {
+      id: 'products',
+      question: 'What Kratom products are most relevant to your business?',
+      options: [
+        { id: 'leaf', label: 'Raw Leaf' },
+        { id: 'powder', label: 'Standard Powder' },
+        { id: 'premium', label: 'Premium Strains (Maeng Da, etc.)' },
+        { id: 'extract', label: 'Extracts & Concentrates' },
+        { id: 'all', label: 'Full Product Range' }
+      ]
+    }
+  ];
+
+  const handleAnswer = (questionId, answerId) => {
+    setAnswers({
+      ...answers,
+      [questionId]: answerId
+    });
+    if (step < questions.length - 1) {
+      setStep(step + 1);
+    } else {
+      setStep(questions.length);
+    }
+  };
+
+  const handleContactChange = (e) => {
+    setContact({
+      ...contact,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setLoading(true);
+    // Simulate API call
+    setTimeout(() => {
+      setLoading(false);
+      setShowResults(true);
+    }, 1500);
+  };
+
+  const getRecommendations = () => {
+    // This is where you would normally process answers on the server
+    // Here we're using a simplified client-side logic
+
+    let recommendations = {
+      primary: [],
+      secondary: [],
+      notes: '',
+      volume: ''
+    };
+
+    // Volume recommendation
+    switch (answers.volume) {
+      case 'small':
+        recommendations.volume = 'Suggested starting volume: 500kg monthly';
+        break;
+      case 'medium':
+        recommendations.volume = 'Suggested starting volume: 2-5 tons monthly';
+        break;
+      case 'large':
+        recommendations.volume = 'Suggested starting volume: 15-25 tons monthly with scheduled increases';
+        break;
+      case 'enterprise':
+        recommendations.volume = 'Custom volume plan with dedicated account management';
+        break;
+      default:
+        recommendations.volume = 'Custom volume recommendation';
+    }
+
+    // Primary product recommendations based on business and priority
+    if (answers.business === 'brand' || answers.business === 'whitelabel') {
+      if (answers.priority === 'alkaloid') {
+        recommendations.primary.push('Thai Maeng Da (Premium, 1.7-2.0% alkaloid content)');
+        recommendations.primary.push('Thai Green Vein (Balanced profile, 1.5-1.8% alkaloid content)');
+      } else if (answers.priority === 'price') {
+        recommendations.primary.push('Indonesian White Vein (Cost-effective, consistent quality)');
+        recommendations.primary.push('Indonesian Green Vein (Balanced profile at competitive pricing)');
+      } else {
+        recommendations.primary.push('Thai Green Vein (Versatile strain with consistent effects)');
+        recommendations.primary.push('Indonesian Maeng Da (Premium quality at competitive price point)');
+      }
+    } else if (answers.business === 'manufacturer') {
+      if (answers.products === 'extract') {
+        recommendations.primary.push('Thai Maeng Da (Ideal for extract manufacturing)');
+        recommendations.primary.push('Premium Leaf (Bulk supply for extraction processes)');
+      } else {
+        recommendations.primary.push('Mixed Strain Bulk Package (Customized ratio based on your products)');
+      }
+    } else if (answers.business === 'distributor') {
+      recommendations.primary.push('Full Catalog Access (Varied selection for your distribution network)');
+      recommendations.primary.push('Custom Packaging Options (White label solutions for rapid deployment)');
+    }
+
+    // Secondary recommendations
+    if (answers.priority === 'ethics') {
+      recommendations.secondary.push('Farmer Direct Program (Premium pricing with direct farmer impact)');
+      recommendations.notes = 'Your focus on ethical sourcing aligns perfectly with our farmer support program. We recommend highlighting this in your marketing to customers.';
+    }
+
+    if (answers.products === 'extract') {
+      recommendations.secondary.push('MIT Extract Series (10%, 30%, 50% standardized options)');
+      recommendations.secondary.push('Custom Extract Development Program');
+    }
+
+    if (answers.market === 'us' && answers.priority === 'compliance') {
+      recommendations.secondary.push('US Compliance Package (Enhanced testing and documentation)');
+      recommendations.notes += ' Our US Compliance Package includes additional testing for all regulated substances and contaminants.';
+    }
+
+    return recommendations;
+  };
+
+  const renderQuestion = (question) => {
+    return (
+      <div className="p-6 max-w-lg mx-auto bg-white rounded-xl shadow-md mb-6 animate-fadeIn">
+        <h2 className="text-xl font-bold text-green-800 mb-4">{question.question}</h2>
+        <div className="space-y-3">
+          {question.options.map(option => (
+            <button
+              key={option.id}
+              onClick={() => handleAnswer(question.id, option.id)}
+              className="w-full py-3 px-4 bg-green-50 hover:bg-green-100 border border-green-200 rounded-lg text-left transition duration-150"
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  const renderContactForm = () => {
+    return (
+      <div className="p-6 max-w-lg mx-auto bg-white rounded-xl shadow-md animate-fadeIn">
+        <h2 className="text-xl font-bold text-green-800 mb-4">Almost there! Tell us about your business</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Your Name</label>
+            <input
+              type="text"
+              name="name"
+              value={contact.name}
+              onChange={handleContactChange}
+              required
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Company Name</label>
+            <input
+              type="text"
+              name="company"
+              value={contact.company}
+              onChange={handleContactChange}
+              required
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Business Email</label>
+            <input
+              type="email"
+              name="email"
+              value={contact.email}
+              onChange={handleContactChange}
+              required
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Estimated Monthly Volume (kg)</label>
+            <input
+              type="text"
+              name="volume"
+              value={contact.volume}
+              onChange={handleContactChange}
+              placeholder="e.g., 500kg, 5 tons, etc."
+              required
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
+            />
+          </div>
+          <div className="pt-4">
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+            >
+              {loading ? (
+                <span className="flex items-center">
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Processing...
+                </span>
+              ) : (
+                'Get My Personalized Recommendations'
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+    );
+  };
+
+  const renderResults = () => {
+    const recommendations = getRecommendations();
+    
+    return (
+      <div className="p-6 max-w-2xl mx-auto bg-white rounded-xl shadow-md animate-fadeIn">
+        <div className="bg-green-50 p-4 rounded-lg mb-6">
+          <h2 className="text-2xl font-bold text-green-800 mb-2">Your Custom Kratom Sourcing Plan</h2>
+          <p className="text-green-600">Prepared exclusively for {contact.name} at {contact.company}</p>
+        </div>
+
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold text-gray-800 mb-2">Primary Recommendations</h3>
+          <ul className="list-disc pl-5 space-y-2">
+            {recommendations.primary.map((item, index) => (
+              <li key={index} className="text-gray-700">{item}</li>
+            ))}
+          </ul>
+        </div>
+
+        {recommendations.secondary.length > 0 && (
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">Complementary Products & Services</h3>
+            <ul className="list-disc pl-5 space-y-2">
+              {recommendations.secondary.map((item, index) => (
+                <li key={index} className="text-gray-700">{item}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        <div className="mb-6 bg-blue-50 p-4 rounded-lg">
+          <h3 className="text-lg font-semibold text-blue-800 mb-2">Volume Recommendation</h3>
+          <p className="text-blue-700">{recommendations.volume}</p>
+        </div>
+
+        {recommendations.notes && (
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">Additional Notes</h3>
+            <p className="text-gray-700">{recommendations.notes}</p>
+          </div>
+        )}
+
+        <div className="bg-gray-50 p-4 rounded-lg mt-8">
+          <h3 className="text-lg font-semibold text-gray-800 mb-2">Next Steps</h3>
+          <p className="text-gray-700 mb-4">A RIM Procurement specialist will contact you within 24 hours to discuss your customized sourcing plan and provide sample options.</p>
+          <p className="text-sm text-gray-500">Your information is secure and will only be used to contact you regarding your Kratom sourcing needs.</p>
+        </div>
+      </div>
+    );
+  };
+
+  const renderProgressBar = () => {
+    const totalSteps = questions.length + 1; // Including contact form
+    const progress = (step / totalSteps) * 100;
+    
+    return (
+      <div className="w-full bg-gray-200 rounded-full h-2.5 mb-6">
+        <div 
+          className="bg-green-600 h-2.5 rounded-full transition-all duration-300 ease-in-out" 
+          style={{ width: `${progress}%` }}
+        ></div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-100 py-12 px-4">
+      <div className="max-w-3xl mx-auto">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-green-900">RIM Procurement</h1>
+          <p className="text-xl text-green-700">Kratom Product Finder</p>
+          <p className="text-gray-600 mt-2">Answer a few questions to receive your personalized wholesale recommendation</p>
+        </div>
+
+        {!showResults && renderProgressBar()}
+
+        {showResults ? (
+          renderResults()
+        ) : (
+          step < questions.length ? renderQuestion(questions[step]) : renderContactForm()
+        )}
+
+        {!showResults && (
+          <div className="text-center mt-6 text-gray-500 text-sm">
+            <p>Question {step + 1} of {questions.length + 1}</p>
+            <p className="mt-2">Your responses help us create your personalized sourcing plan</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default KratomQuiz;

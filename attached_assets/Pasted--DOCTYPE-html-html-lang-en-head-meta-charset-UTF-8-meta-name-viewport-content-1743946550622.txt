@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kratom Pricing Data</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .footer {
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+            margin-top: 20px;
+        }
+        .actions {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        button {
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .export-button {
+            background-color: #2196F3;
+        }
+        .export-button:hover {
+            background-color: #0b7dda;
+        }
+        @media screen and (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            table {
+                display: block;
+                overflow-x: auto;
+            }
+            th, td {
+                padding: 8px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Kratom Pricing Data</h1>
+        
+        <div class="actions">
+            <button onclick="saveData()" class="save-button">Save Changes</button>
+            <button onclick="exportToCSV()" class="export-button">Export to CSV</button>
+        </div>
+        
+        <div style="overflow-x: auto;">
+            <table id="priceTable">
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Form</th>
+                        <th>Typical Alkaloid Content</th>
+                        <th>Estimated Wholesale (Thailand) ($/kg)</th>
+                        <th>Estimated Wholesale (USA) ($/kg)</th>
+                        <th>Typical Retail (USA) ($/kg)</th>
+                        <th>Price Per Ton ($/ton)</th>
+                        <th>Custom Price 1 ($/kg)</th>
+                        <th>Custom Price 2 ($/kg)</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <!-- Table data will be inserted here by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="footer">
+            <p>* All prices shown in USD per kilogram or per ton</p>
+            <p>* Custom Price columns can be used for your own pricing calculations</p>
+            <p>* Data stored locally in your browser</p>
+        </div>
+    </div>
+
+    <script>
+        // Initial data
+        let kratomData = [
+            {
+                type: "Thai White Vein",
+                form: "Powder",
+                alkaloidContent: "~1.5–1.7%",
+                wholesaleThailand: "18–25",
+                wholesaleUSA: "30–45",
+                retailUSA: "50–80",
+                pricePerTon: "50,000–80,000",
+                customPrice1: "",
+                customPrice2: "",
+                notes: "Often marketed for energizing properties"
+            },
+            {
+                type: "Thai Green Vein",
+                form: "Powder",
+                alkaloidContent: "~1.5–1.8%",
+                wholesaleThailand: "20–28",
+                wholesaleUSA: "35–50",
+                retailUSA: "55–90",
+                pricePerTon: "55,000–90,000",
+                customPrice1: "",
+                customPrice2: "",
+                notes: "Balanced profile, widely used"
+            },
+            {
+                type: "Thai Red Vein",
+                form: "Powder",
+                alkaloidContent: "~1.4–1.7%",
+                wholesaleThailand: "18–25",
+                wholesaleUSA: "30–45",
+                retailUSA: "50–80",
+                pricePerTon: "50,000–80,000",
+                customPrice1: "",
+                customPrice2: "",
+                notes: "Often marketed for relaxation"
+            },
+            {
+                type: "Maeng Da (Thai)",
+                form: "Powder",
+                alkaloidContent: "~1.7–2.0%",
+                wholesaleThailand: "22–30",
+                wholesaleUSA: "40–55",
+                retailUSA: "60–100",
+                pricePerTon: "60,000–100,000",
+                customPrice1: "",
+                customPrice2: "",
+                notes: "Premium variant with higher potency"
+            },
+            {
+                type: "Premium Leaf (Any)",
+                form: "Leaf",
+                alkaloidContent: "~1.2–1.7%",
+                wholesaleThailand: "12–18",
+                wholesaleUSA: "25–35",
+                retailUSA: "40–60",
+                pricePerTon: "40,000–60,000",
+                customPrice1: "",
+                customPrice2: "",
+                notes: "Bulk dried leaf for tea or further processing"
+            },
+            {
+                type: "MIT Extract 10%",
+                form: "Powder/Resin",
+                alkaloidContent: "~10% mitragynine",
+                wholesaleThailand: "50–70",
+                wholesaleUSA: "80–120",
+                retailUSA: "150–200",
+                pricePerTon: "150,000–200,000",
+                customPrice1: "",
+                customPrice2: "",
+                notes: "Mild extract, often used to fortify powder blends"
+            },
+            {
+                type: "MIT Extract 30%",
+                form: "Powder/Resin",
+                alkaloidContent: "~30% mitragynine",
+                wholesaleThailand: "100–140",
+                wholesaleUSA: "140–180",
+                retailUSA: "250–300",
+                pricePerTon: "250,000–300,000",
+                customPrice1: "",
+                customPrice2: "",
+                notes: "Stronger potency extract"
+            },
+            {
+                type: "MIT Extract 50%",
+                form: "Powder/Resin",
+                alkaloidContent: "~50% mitragynine",
+                wholesaleThailand: "160–200",
+                wholesaleUSA: "200–250",
+                retailUSA: "350–450",
+                pricePerTon: "350,000–450,000",
+                customPrice1: "",
+                customPrice2: "",
+                notes: "High potency extract"
+            }
+        ];
+
+        // Load data from local storage if exists
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedData = localStorage.getItem('kratomPricingData');
+            if (savedData) {
+                kratomData = JSON.parse(savedData);
+            }
+            renderTable();
+        });
+
+        // Render the table
+        function renderTable() {
+            const tableBody = document.getElementById('tableBody');
+            tableBody.innerHTML = '';
+
+            kratomData.forEach((row, index) => {
+                const tr = document.createElement('tr');
+                
+                // Regular cells
+                appendCell(tr, row.type);
+                appendCell(tr, row.form);
+                appendCell(tr, row.alkaloidContent);
+                appendCell(tr, row.wholesaleThailand);
+                appendCell(tr, row.wholesaleUSA);
+                appendCell(tr, row.retailUSA);
+                appendCell(tr, row.pricePerTon);
+                
+                // Custom price cells (editable)
+                appendInputCell(tr, row, 'customPrice1', index);
+                appendInputCell(tr, row, 'customPrice2', index);
+                
+                // Notes cell
+                appendCell(tr, row.notes);
+                
+                tableBody.appendChild(tr);
+            });
+        }
+
+        // Helper to append a regular cell
+        function appendCell(tr, value) {
+            const td = document.createElement('td');
+            td.textContent = value;
+            tr.appendChild(td);
+        }
+
+        // Helper to append an input cell
+        function appendInputCell(tr, row, field, rowIndex) {
+            const td = document.createElement('td');
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = row[field] || '';
+            input.addEventListener('change', function(e) {
+                kratomData[rowIndex][field] = e.target.value;
+            });
+            td.appendChild(input);
+            tr.appendChild(td);
+        }
+
+        // Save data to local storage
+        function saveData() {
+            localStorage.setItem('kratomPricingData', JSON.stringify(kratomData));
+            alert('Data saved successfully!');
+        }
+
+        // Export to CSV
+        function exportToCSV() {
+            // Header row
+            let csvContent = "Type,Form,Typical Alkaloid Content,Estimated Wholesale (Thailand) ($/kg),Estimated Wholesale (USA) ($/kg),Typical Retail (USA) ($/kg),Price Per Ton ($/ton),Custom Price 1 ($/kg),Custom Price 2 ($/kg),Notes\n";
+            
+            // Data rows
+            kratomData.forEach(row => {
+                csvContent += `"${row.type}","${row.form}","${row.alkaloidContent}","${row.wholesaleThailand}","${row.wholesaleUSA}","${row.retailUSA}","${row.pricePerTon}","${row.customPrice1}","${row.customPrice2}","${row.notes}"\n`;
+            });
+            
+            // Create download link
+            const encodedUri = encodeURI('data:text/csv;charset=utf-8,' + csvContent);
+            const link = document.createElement('a');
+            link.setAttribute('href', encodedUri);
+            link.setAttribute('download', 'kratom_pricing_data.csv');
+            document.body.appendChild(link);
+            
+            // Trigger download
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>
