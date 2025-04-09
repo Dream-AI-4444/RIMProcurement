@@ -1,14 +1,20 @@
 import { defineConfig } from "drizzle-kit";
 
-if (!process.env.DATABASE_URL) {
-  throw new Error("DATABASE_URL, ensure the database is provisioned");
-}
+// Set a default DATABASE_URL if not provided
+const DATABASE_URL = process.env.DATABASE_URL || "postgres://postgres:postgres@localhost:5432/kratom";
 
 export default defineConfig({
-  out: "./migrations",
   schema: "./shared/schema.ts",
+  out: "./migrations",
   dialect: "postgresql",
   dbCredentials: {
-    url: process.env.DATABASE_URL,
+    url: DATABASE_URL,
   },
+  // Configure the migrations table name and schema
+  migrations: {
+    table: "__drizzle_migrations",
+    schema: "public",
+  },
+  // Enable verbose output for debugging
+  verbose: true,
 });

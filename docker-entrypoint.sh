@@ -9,17 +9,13 @@ until pg_isready -h postgres -p 5432 -U postgres; do
 done
 echo "PostgreSQL is up - executing command"
 
-# Generate migrations directory if it doesn't exist
+# Setting up migrations
 echo "Setting up migrations..."
 mkdir -p migrations
 
-# Generate schema migrations
-echo "Generating migrations..."
-pnpm drizzle-kit generate --schema=./shared/schema.ts --out=./migrations
-
-# Apply migrations to database
+# Apply migrations using the programmatic approach (more reliable in Docker)
 echo "Applying migrations to database..."
-pnpm db:push
+node db-migrate.js
 
 # Start the application
 echo "Starting the application..."

@@ -16,12 +16,12 @@ fi
 # Create directory for migrations if it doesn't exist
 mkdir -p migrations
 
-# Generate migrations from schema
+# Generate migrations from schema using updated drizzle-kit command
 echo "Generating migrations..."
-pnpm drizzle-kit generate --schema=./shared/schema.ts --out=./migrations --dialect=postgresql
+npx drizzle-kit generate --dialect=postgresql
 
 # Apply migrations to database
 echo "Applying migrations to database..."
-pnpm db:push
+node db-migrate.js
 
 echo "Database initialization complete!"
