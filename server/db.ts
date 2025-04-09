@@ -1,4 +1,5 @@
 import { drizzle } from "drizzle-orm/node-postgres";
+import { sql } from "drizzle-orm";
 import pg from "pg";
 import * as schema from "@shared/schema";
 import { config } from "./config";
@@ -54,7 +55,7 @@ export const db = drizzle(pool, { schema });
 // Helper function to check database health
 export async function checkDatabaseHealth() {
   try {
-    const result = await db.execute(schema.sql`SELECT 1`);
+    const result = await db.execute(sql`SELECT 1`);
     return { healthy: true, result };
   } catch (error) {
     console.error('Database health check failed:', error);

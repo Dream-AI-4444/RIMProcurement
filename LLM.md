@@ -14,4 +14,18 @@ This project follows a modern full-stack architecture:
 - **Backend**: Node.js + Express
 - **Database**: PostgreSQL with Drizzle ORM
 - **Authentication**: Passport.js
-- **Deployment**:
+- **Deployment**: Docker + Docker Compose
+
+## 🛠️ Development Notes
+
+### 2025-04-09 Database Health Check Fix
+
+**Issue**: The health check endpoint was failing with `TypeError: (void 0) is not a function` in the `checkDatabaseHealth` function. 
+
+**Root Cause**: The function was trying to use `schema.sql` which doesn't exist. The `sql` template tag should be imported directly from drizzle-orm.
+
+**Solution**: 
+1. Added import for `sql` from drizzle-orm: `import { sql } from "drizzle-orm";`
+2. Changed `db.execute(schema.sql\`SELECT 1\`)` to `db.execute(sql\`SELECT 1\`)`
+
+**Impact**: This fixes the database health check, ensuring the `/health` endpoint returns proper status codes for monitoring systems.
