@@ -27,11 +27,7 @@ fi
 
 # Print database connection info for debugging (hide password)
 echo "Database connection info:"
-echo "DATABASE_URL format: postgres://username:******@hostname:port/database"
-echo "DB_HOST: $DB_HOST"
-echo "DB_PORT: $DB_PORT"
-echo "DB_NAME: $DB_NAME"
-echo "DB_USER: $DB_USER"
+echo "DATABASE_URL: $DATABASE_URL"
 
 # Run database migrations
 echo "Running database migrations with command: $MIGRATION_SCRIPT"
