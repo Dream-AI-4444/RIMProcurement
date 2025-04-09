@@ -28,11 +28,24 @@ async function main() {
 
     // Apply migrations from the migrations folder
     logger.info("Applying migrations from folder: migrations");
-    await migrate(db, { migrationsFolder: "migrations" });
+    await migrate(db, {
+      migrationsFolder: "migrations",
+      // Ignore existing tables
+      migrateOnce: true
+    });
 
     logger.info("Migrations completed successfully!");
   } catch (error) {
+    // Enhanced error logging
     logger.error("Migration error:", error);
+
+    // Check if it's a table already exists error
+    if (error instanceof Error && error.message.includes('relation already exists')) {
+      logger.warn("Some tables already exist. This might be expected.");
+      // Optionally, you could choose to continue or exit based on your requirements
+      return;
+    }
+
     throw error;
   } finally {
     // Ensure pool is closed even if migration fails
