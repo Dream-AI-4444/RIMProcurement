@@ -18,7 +18,7 @@ mkdir -p migrations
 
 # Generate migrations from schema
 echo "Generating migrations..."
-pnpm drizzle-kit generate --schema=./shared/schema.ts --out=./migrations
+pnpm drizzle-kit generate --schema=./shared/schema.ts --out=./migrations --dialect=postgresql
 
 # Apply migrations to database
 echo "Applying migrations to database..."
