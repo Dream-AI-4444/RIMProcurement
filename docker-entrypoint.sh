@@ -30,9 +30,9 @@ echo "DB_PORT: $DB_PORT"
 echo "DB_NAME: $DB_NAME"
 echo "DB_USER: $DB_USER"
 
-# Run database setup with explicit URL passing
+# Run database setup with explicit parameters
 echo "Running database migrations..."
-pnpm db:push --dialect postgresql --url="$DATABASE_URL"
+/app/fix-migration.sh
 
 # Start the application
 echo "Starting the application..."
