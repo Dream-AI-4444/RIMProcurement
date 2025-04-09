@@ -14,7 +14,7 @@ mkdir -p migrations
 
 # Run database setup
 echo "Setting up database..."
-pnpm drizzle-kit push --dialect postgresql
+pnpm drizzle-kit push --dialect postgresql --schema ./shared/schema.ts
 
 # Start the application
 echo "Starting the application..."
