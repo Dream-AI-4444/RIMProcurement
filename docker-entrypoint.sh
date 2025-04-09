@@ -3,14 +3,11 @@ set -e
 
 # Wait for PostgreSQL to be ready
 echo "Waiting for PostgreSQL to be ready..."
-until pg_isready -h postgres -p 5432 -U postgres; do
+until pg_isready -h postgres -p 5432 -U postgres -d kratom; do
   echo "PostgreSQL is unavailable - sleeping"
   sleep 1
 done
 echo "PostgreSQL is up - executing command"
-
-# Create migrations directory if it doesn't exist
-mkdir -p migrations
 
 # Set environment variables with explicit defaults if not set
 : ${DB_HOST:=postgres}
@@ -34,8 +31,8 @@ echo "DB_NAME: $DB_NAME"
 echo "DB_USER: $DB_USER"
 
 # Run database setup with explicit URL passing
-echo "Setting up database..."
-pnpm drizzle-kit push --dialect postgresql --url="$DATABASE_URL" --schema=./shared/schema.ts
+echo "Running database migrations..."
+pnpm db:push --dialect postgresql --url="$DATABASE_URL"
 
 # Start the application
 echo "Starting the application..."

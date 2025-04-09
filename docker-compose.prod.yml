@@ -46,8 +46,6 @@ services:
     # No direct port exposure in production (handled by Traefik)
     # ports:
     #   - "5000:5000"
-    volumes:
-      - migrations-data:/app/migrations
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
       interval: 30s
@@ -99,9 +97,6 @@ services:
 volumes:
   postgres-data:
     name: kratom-postgres-data
-    driver: local
-  migrations-data:
-    name: kratom-migrations-data
     driver: local
 
 networks:
