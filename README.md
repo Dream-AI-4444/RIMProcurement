@@ -75,7 +75,7 @@ pnpm check        # typecheck
 pnpm db:push      # push DB schema
 pnpm db:generate  # generate migrations
 pnpm db:studio    # launch Drizzle Studio
-pnpm migrate:dev  # apply migrations
+pnpm db:migrate   # apply migrations
 
 Logging levels: error, warn, info (default), debug
 

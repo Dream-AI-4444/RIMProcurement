@@ -2,7 +2,7 @@
 set -e
 
 # Default migration script path
-: ${MIGRATION_SCRIPT:=pnpm migrate}
+: ${MIGRATION_SCRIPT:=pnpm db:migrate}
 
 # Wait for PostgreSQL to be ready
 echo "Waiting for PostgreSQL to be ready..."
@@ -33,7 +33,7 @@ echo "DB_PORT: $DB_PORT"
 echo "DB_NAME: $DB_NAME"
 echo "DB_USER: $DB_USER"
 
-# Run database migrations using pnpm
+# Run database migrations
 echo "Running database migrations with command: $MIGRATION_SCRIPT"
 if ! $MIGRATION_SCRIPT; then
   echo "Database migration failed"
