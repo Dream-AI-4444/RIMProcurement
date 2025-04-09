@@ -16,12 +16,8 @@ fi
 # Create directory for migrations if it doesn't exist
 mkdir -p migrations
 
-# Generate migrations from schema using drizzle-kit
-echo "Generating migrations..."
-npx drizzle-kit generate --dialect=postgresql
-
-# Apply migrations using TypeScript migration
-echo "Applying migrations to database..."
-npx tsx server/migrate.ts
+# Apply migrations to database using the package.json script directly
+echo "Running database migrations..."
+pnpm db:push --dialect postgresql
 
 echo "Database initialization complete!"

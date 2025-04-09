@@ -9,14 +9,12 @@ until pg_isready -h postgres -p 5432 -U postgres; do
 done
 echo "PostgreSQL is up - executing command"
 
-# Setting up migrations directory
-echo "Setting up migrations directory..."
+# Create migrations directory if it doesn't exist
 mkdir -p migrations
 
-# Run TypeScript-based migration
-echo "Running database migrations using TypeScript..."
-# Use tsx to run the TypeScript migration file directly
-tsx server/migrate.ts
+# Run database setup
+echo "Setting up database..."
+pnpm drizzle-kit push --dialect postgresql
 
 # Start the application
 echo "Starting the application..."
