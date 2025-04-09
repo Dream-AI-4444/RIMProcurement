@@ -13,6 +13,7 @@ This platform helps wholesale buyers navigate the Kratom market by analyzing the
 - **User Accounts**: Secure authentication and profile management
 - **Responsive Design**: Works seamlessly across desktop and mobile devices
 - **Analytics Dashboard**: Track and analyze user submissions and preferences
+- **Blockchain Integration**: Support for blockchain-powered supply chain features
 
 ## 🛠️ Technology Stack
 
@@ -21,6 +22,8 @@ This platform helps wholesale buyers navigate the Kratom market by analyzing the
 - **Database**: PostgreSQL with Drizzle ORM
 - **Authentication**: Passport.js
 - **Payment Processing**: Stripe
+- **Logging**: Structured logging with configurable levels
+- **Error Handling**: Comprehensive error handling and reporting
 
 ## 📋 Prerequisites
 
@@ -29,6 +32,18 @@ This platform helps wholesale buyers navigate the Kratom market by analyzing the
 - pnpm
 
 ## 🔧 Installation
+
+### Environment Variables
+
+Create a `.env` file in the root directory with the following variables:
+
+```
+NODE_ENV=development
+DATABASE_URL=postgres://username:password@localhost:5432/kratom
+PORT=5000
+SESSION_SECRET=replace_this_with_a_long_secure_random_string_in_production
+LOG_LEVEL=info
+```
 
 ### Database Setup
 
@@ -46,7 +61,7 @@ Alternatively, you can run the following commands manually:
 export DATABASE_URL="postgres://username:password@localhost:5432/kratom"
 
 # Generate migrations
-pnpm drizzle-kit generate:pg
+pnpm drizzle-kit generate
 
 # Apply migrations
 pnpm db:push
@@ -65,12 +80,7 @@ pnpm db:push
    pnpm install
    ```
 
-3. Set up environment variables:
-   ```bash
-   # Create a .env file in the root directory
-   DATABASE_URL=postgres://username:password@localhost:5432/kratom
-   # Add other necessary environment variables
-   ```
+3. Set up environment variables as described above.
 
 4. Initialize the database:
    ```bash
@@ -100,6 +110,25 @@ pnpm db:push
 3. The application will be available at http://localhost:5000
 
 ## 🧪 Development
+
+### Logging Levels
+
+The application supports multiple logging levels:
+
+- **error**: Only logs critical errors
+- **warn**: Logs warnings and errors
+- **info**: Logs general application information (default)
+- **debug**: Verbose logging for debugging
+
+To change the logging level, set the `LOG_LEVEL` environment variable.
+
+### Health Check Endpoint
+
+The application includes a health check endpoint at `/health` that reports the status of all services.
+
+```bash
+curl http://localhost:5000/health
+```
 
 ### Troubleshooting
 
@@ -143,13 +172,16 @@ kratom/
 │   │   ├── App.tsx     # Main application component
 │   │   └── main.tsx    # Entry point
 ├── server/             # Express backend
+│   ├── config.ts       # Environment configuration
 │   ├── db.ts           # Database configuration
 │   ├── index.ts        # Server entry point
+│   ├── logger.ts       # Logging service
 │   ├── routes.ts       # API route definitions
 │   ├── storage.ts      # Data storage logic
 │   └── vite.ts         # Vite integration for serving the frontend
 ├── shared/             # Shared code between frontend and backend
 │   └── schema.ts       # Database schema and type definitions
+├── migrations/         # Database migration files
 ├── docker-compose.yml  # Docker configuration
 ├── Dockerfile          # Docker build instructions
 ├── init-db.sh          # Database initialization script
@@ -162,6 +194,7 @@ The application uses PostgreSQL with Drizzle ORM. The main tables include:
 
 - **users**: User authentication information
 - **quiz_submissions**: Stores quiz responses and product recommendations
+  - Now includes fields for quality factors and blockchain preferences
 
 ## 🔒 Authentication
 
@@ -186,6 +219,20 @@ The application uses Passport.js with local strategy for authentication. User pa
    - Set up Node.js and PostgreSQL
    - Run build and start scripts
    - Configure as a system service
+
+## 📊 Monitoring and Operations
+
+### Health Checks
+
+The application provides a `/health` endpoint that reports the status of all connected services. This can be used for monitoring and alerting.
+
+### Logging
+
+The application uses structured logging with configurable levels. In production, you can set the `LOG_LEVEL` to `info` or `warn` to reduce log volume.
+
+### Graceful Shutdown
+
+The application implements graceful shutdown handlers for SIGTERM and SIGINT signals. This ensures that the application can be safely stopped without losing any active connections.
 
 ## 🤝 Contributing
 
