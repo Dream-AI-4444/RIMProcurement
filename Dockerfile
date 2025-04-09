@@ -16,8 +16,13 @@ RUN pnpm install
 # Copy the rest of the application
 COPY . .
 
-# Make the scripts executable
-RUN chmod +x /app/docker-entrypoint.sh /app/migrations-setup.sh
+# Copy critical files explicitly to ensure they're available
+COPY drizzle.config.ts ./
+COPY shared/schema.ts ./shared/
+COPY docker-entrypoint.sh ./
+
+# Make the entrypoint script executable
+RUN chmod +x /app/docker-entrypoint.sh
 
 # Ensure migrations directory exists and is writable
 RUN mkdir -p /app/migrations && chmod 777 /app/migrations
