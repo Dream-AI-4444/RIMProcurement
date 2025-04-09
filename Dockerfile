@@ -8,7 +8,7 @@ RUN corepack enable && corepack prepare pnpm@latest --activate && \
 WORKDIR /app
 
 # Copy package.json and related files
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY package.json pnpm-lock.yaml ./
 
 # Copy the rest of the application
 COPY . .
