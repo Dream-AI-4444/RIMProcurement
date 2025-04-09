@@ -1,26 +1,33 @@
 FROM node:20-alpine
 
-# Install pnpm and PostgreSQL client (for health checks)
+# Install pnpm, PostgreSQL client, and curl for health checks
 RUN corepack enable && corepack prepare pnpm@latest --activate && \
-    apk add --no-cache postgresql-client
+    apk add --no-cache postgresql-client bash curl
 
 # Set working directory
 WORKDIR /app
 
 # Copy package.json and related files
-COPY package.json pnpm-lock.yaml ./
-
-# Copy the rest of the application
-COPY . .
-
-# Make the entrypoint script executable
-RUN chmod +x /app/docker-entrypoint.sh
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
 # Install dependencies
 RUN pnpm install
 
+# Copy the rest of the application
+COPY . .
+
+# Make the scripts executable
+RUN chmod +x /app/docker-entrypoint.sh /app/migrations-setup.sh
+
+# Ensure migrations directory exists and is writable
+RUN mkdir -p /app/migrations && chmod 777 /app/migrations
+
 # Build the application
 RUN pnpm build
+
+# Add health check
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:5000/health || exit 1
 
 # Expose the application port
 EXPOSE 5000

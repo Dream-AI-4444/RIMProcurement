@@ -30,6 +30,28 @@ This platform helps wholesale buyers navigate the Kratom market by analyzing the
 
 ## 🔧 Installation
 
+### Database Setup
+
+Before running the application, make sure to initialize the database schema:
+
+```bash
+# Generate and apply database schema
+./init-db.sh
+```
+
+Alternatively, you can run the following commands manually:
+
+```bash
+# Set your database connection string
+export DATABASE_URL="postgres://username:password@localhost:5432/kratom"
+
+# Generate migrations
+pnpm drizzle-kit generate:pg
+
+# Apply migrations
+pnpm db:push
+```
+
 ### Standard Installation
 
 1. Clone the repository:
@@ -50,9 +72,9 @@ This platform helps wholesale buyers navigate the Kratom market by analyzing the
    # Add other necessary environment variables
    ```
 
-4. Set up the database:
+4. Initialize the database:
    ```bash
-   pnpm db:push
+   ./init-db.sh
    ```
 
 5. Start the development server:
@@ -61,6 +83,8 @@ This platform helps wholesale buyers navigate the Kratom market by analyzing the
    ```
 
 ### Docker Installation
+
+> **Note**: The Docker setup automatically handles database initialization.
 
 1. Clone the repository:
    ```bash
@@ -76,6 +100,14 @@ This platform helps wholesale buyers navigate the Kratom market by analyzing the
 3. The application will be available at http://localhost:5000
 
 ## 🧪 Development
+
+### Troubleshooting
+
+If you encounter a `relation "quiz_submissions" does not exist` error:
+
+1. Make sure your database is properly initialized using the instructions in the Database Setup section
+2. For Docker installations, ensure the entrypoint script is running correctly
+3. You can manually fix by running `./init-db.sh` or applying migrations directly
 
 ### Development Workflow
 
@@ -120,6 +152,7 @@ kratom/
 │   └── schema.ts       # Database schema and type definitions
 ├── docker-compose.yml  # Docker configuration
 ├── Dockerfile          # Docker build instructions
+├── init-db.sh          # Database initialization script
 └── package.json        # Project dependencies and scripts
 ```
 

@@ -3,10 +3,38 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertQuizSubmissionSchema } from "@shared/schema";
 import { z } from "zod";
+import { db } from "./db";
+import { sql } from "drizzle-orm";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // put application routes here
   // prefix all routes with /api
+
+  // Health check endpoint for monitoring
+  app.get("/health", async (_req: Request, res: Response) => {
+    try {
+      // Check database connection
+      await db.execute(sql`SELECT 1`);
+      
+      res.status(200).json({
+        status: "ok",
+        timestamp: new Date().toISOString(),
+        services: {
+          database: "up"
+        }
+      });
+    } catch (error) {
+      console.error("Health check failed:", error);
+      res.status(500).json({
+        status: "error",
+        timestamp: new Date().toISOString(),
+        services: {
+          database: "down"
+        },
+        message: "Service is not healthy"
+      });
+    }
+  });
 
   // Quiz submission endpoint
   app.post("/api/quiz/submit", async (req: Request, res: Response) => {

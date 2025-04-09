@@ -8,15 +8,17 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: kratom
+    # No public port exposure in production
     # ports:
     #   - "5432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 5s
+      test: ["CMD-SHELL", "pg_isready -U postgres -d kratom"]
+      interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 10s
     networks:
       - hanzo-network
 
@@ -31,8 +33,17 @@ services:
     environment:
       - NODE_ENV=production
       - DATABASE_URL=postgres://postgres:postgres@postgres:5432/kratom
+    # No direct port exposure in production (handled by Traefik)
     # ports:
     #   - "5000:5000"
+    volumes:
+      - migrations-data:/app/migrations
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
@@ -52,6 +63,9 @@ services:
 volumes:
   postgres-data:
     name: kratom-postgres-data
+    driver: local
+  migrations-data:
+    name: kratom-migrations-data
     driver: local
 
 networks:
