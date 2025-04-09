@@ -60,6 +60,9 @@ services:
       - "traefik.http.middlewares.kratom-csp.headers.customResponseHeaders.Content-Security-Policy=connect-src 'self' https://kratom.hanzo.ai http://kratom.hanzo.ai https://rimkratom.com http://rimkratom.com;"
       - "traefik.http.services.kratom-service.loadbalancer.server.port=5000"
 
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true"
+
       # Create a middleware for www to non-www redirect
       - "traefik.http.middlewares.www-redirect.redirectregex.regex=^https?://www\\.(rimkratom\\.com)(.*)"
       - "traefik.http.middlewares.www-redirect.redirectregex.replacement=https://$${1}$${2}"
