@@ -30,7 +30,19 @@ services:
         condition: service_healthy
     environment:
       - NODE_ENV=production
+      # Database connection string
       - DATABASE_URL=postgres://postgres:postgres@postgres:5432/kratom
+      - DRIZZLE_DATABASE_URL=postgres://postgres:postgres@postgres:5432/kratom
+      # Individual database connection parameters for fallback
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=kratom
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      # Other settings
+      - PORT=5000
+      - LOG_LEVEL=info
+      - SESSION_SECRET=long_secure_random_string_for_production
     # No direct port exposure in production (handled by Traefik)
     # ports:
     #   - "5000:5000"
@@ -44,9 +56,18 @@ services:
       start_period: 15s
     restart: unless-stopped
     labels:
+      # Common settings
       - "traefik.enable=true"
       - "traefik.http.middlewares.well-known.headers.customrequestheaders.X-Forwarded-Proto=https"
-      - "traefik.http.middlewares.kratom-csp.headers.customResponseHeaders.Content-Security-Policy=connect-src 'self' https://kratom.hanzo.ai http://kratom.hanzo.ai;"
+      - "traefik.http.middlewares.kratom-csp.headers.customResponseHeaders.Content-Security-Policy=connect-src 'self' https://kratom.hanzo.ai http://kratom.hanzo.ai https://rimkratom.com http://rimkratom.com;"
+      - "traefik.http.services.kratom-service.loadbalancer.server.port=5000"
+      
+      # Create a middleware for www to non-www redirect
+      - "traefik.http.middlewares.www-redirect.redirectregex.regex=^https?://www\\.(rimkratom\\.com)(.*)"
+      - "traefik.http.middlewares.www-redirect.redirectregex.replacement=https://$${1}$${2}"
+      - "traefik.http.middlewares.www-redirect.redirectregex.permanent=true"
+      
+      # HTTP routers for hanzo.ai domain (original)
       - "traefik.http.routers.kratom-http.rule=Host(`kratom.hanzo.ai`)"
       - "traefik.http.routers.kratom-http.entrypoints=web"
       - "traefik.http.routers.kratom-http.middlewares=well-known,kratom-csp,redirect-to-https"
@@ -54,7 +75,24 @@ services:
       - "traefik.http.routers.kratom-https.entrypoints=websecure"
       - "traefik.http.routers.kratom-https.middlewares=well-known,kratom-csp"
       - "traefik.http.routers.kratom-https.tls.certresolver=letsencrypt"
-      - "traefik.http.services.kratom-service.loadbalancer.server.port=5000"
+      
+      # HTTP routers for rimkratom.com (non-www)
+      - "traefik.http.routers.rimkratom-http.rule=Host(`rimkratom.com`)"
+      - "traefik.http.routers.rimkratom-http.entrypoints=web"
+      - "traefik.http.routers.rimkratom-http.middlewares=well-known,kratom-csp,redirect-to-https"
+      - "traefik.http.routers.rimkratom-https.rule=Host(`rimkratom.com`)"
+      - "traefik.http.routers.rimkratom-https.entrypoints=websecure"
+      - "traefik.http.routers.rimkratom-https.middlewares=well-known,kratom-csp"
+      - "traefik.http.routers.rimkratom-https.tls.certresolver=letsencrypt"
+      
+      # HTTP routers for www.rimkratom.com (redirects to non-www)
+      - "traefik.http.routers.www-rimkratom-http.rule=Host(`www.rimkratom.com`)"
+      - "traefik.http.routers.www-rimkratom-http.entrypoints=web"
+      - "traefik.http.routers.www-rimkratom-http.middlewares=well-known,kratom-csp,redirect-to-https"
+      - "traefik.http.routers.www-rimkratom-https.rule=Host(`www.rimkratom.com`)"
+      - "traefik.http.routers.www-rimkratom-https.entrypoints=websecure"
+      - "traefik.http.routers.www-rimkratom-https.middlewares=well-known,kratom-csp,www-redirect"
+      - "traefik.http.routers.www-rimkratom-https.tls.certresolver=letsencrypt"
     networks:
       - hanzo-network
 

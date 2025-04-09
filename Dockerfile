@@ -37,8 +37,15 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
 # Expose the application port
 EXPOSE 5000
 
-# Set environment variables
-ENV NODE_ENV=production
+# Set default environment variables for database
+ENV NODE_ENV=production \
+    DATABASE_URL=postgres://postgres:postgres@postgres:5432/kratom \
+    DRIZZLE_DATABASE_URL=postgres://postgres:postgres@postgres:5432/kratom \
+    DB_HOST=postgres \
+    DB_PORT=5432 \
+    DB_NAME=kratom \
+    DB_USER=postgres \
+    DB_PASSWORD=postgres
 
 # Use our entrypoint script
 ENTRYPOINT ["/app/docker-entrypoint.sh"]

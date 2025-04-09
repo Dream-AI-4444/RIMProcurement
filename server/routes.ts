@@ -5,6 +5,8 @@ import { insertQuizSubmissionSchema } from "@shared/schema";
 import { z } from "zod";
 import { db, checkDatabaseHealth } from "./db";
 import logger from "./logger";
+import rateLimit from "express-rate-limit";
+import helmet from "helmet";
 
 // Middleware for request validation
 const validateRequest = (schema: z.ZodType<any>) => {
@@ -32,7 +34,45 @@ const logRequest = (req: Request, _res: Response, next: NextFunction) => {
   next();
 };
 
+// Basic rate limiter for all requests
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: 'Too many requests from this IP, please try again after 15 minutes'
+});
+
+// Stricter rate limiter for submissions
+const submissionLimiter = rateLimit({
+  windowMs:.5 * 60 * 1000, // 30 seconds
+  max: 3, // Limit each IP to 3 submission requests per windowMs
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: 'Too many submission attempts from this IP, please try again after 30 seconds'
+});
+
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Apply security middleware
+  app.use(helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", "data:"],
+        connectSrc: ["'self'"],
+        fontSrc: ["'self'"],
+        objectSrc: ["'none'"],
+        mediaSrc: ["'self'"],
+        frameSrc: ["'none'"],
+      },
+    },
+  }));
+  
+  // Apply global rate limiting
+  app.use(generalLimiter);
+  
   // Apply global middleware
   app.use(logRequest);
 
@@ -62,9 +102,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Quiz submission endpoint with validation
+  // Quiz submission endpoint with validation and rate limiting
   app.post(
     "/api/quiz/submit", 
+    submissionLimiter,
     validateRequest(insertQuizSubmissionSchema.omit({ submittedAt: true })),
     async (req: Request, res: Response) => {
       try {
@@ -104,8 +145,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   );
 
-  // Get previous submissions for a user
-  app.get("/api/quiz/submissions/:email", async (req: Request, res: Response) => {
+  // Get previous submissions for a user (rate limited to prevent scraping)
+  app.get("/api/quiz/submissions/:email", rateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    max: 10, // Limit each IP to 10 requests per minute
+    message: 'Too many requests, please try again later'
+  }), async (req: Request, res: Response) => {
     try {
       const email = req.params.email;
       if (!email) {

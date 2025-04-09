@@ -14,6 +14,8 @@ This platform helps wholesale buyers navigate the Kratom market by analyzing the
 - **Responsive Design**: Works seamlessly across desktop and mobile devices
 - **Analytics Dashboard**: Track and analyze user submissions and preferences
 - **Blockchain Integration**: Support for blockchain-powered supply chain features
+- **Enhanced Security**: Rate limiting and secure headers
+- **Flexible Database Connection**: Support for both connection string and individual parameters
 
 ## 🛠️ Technology Stack
 
@@ -24,10 +26,11 @@ This platform helps wholesale buyers navigate the Kratom market by analyzing the
 - **Payment Processing**: Stripe
 - **Logging**: Structured logging with configurable levels
 - **Error Handling**: Comprehensive error handling and reporting
+- **Security**: Helmet for secure headers, rate limiting for API protection
 
 ## 📋 Prerequisites
 
-- Node.js (v18+)
+- Node.js (v20+)
 - PostgreSQL (v14+)
 - pnpm
 
@@ -38,8 +41,20 @@ This platform helps wholesale buyers navigate the Kratom market by analyzing the
 Create a `.env` file in the root directory with the following variables:
 
 ```
+# Required (choose either DATABASE_URL or individual parameters)
 NODE_ENV=development
+
+# Option 1: Database connection string
 DATABASE_URL=postgres://username:password@localhost:5432/kratom
+
+# Option 2: Individual database connection parameters
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=kratom
+DB_USER=postgres
+DB_PASSWORD=postgres
+
+# Optional with defaults
 PORT=5000
 SESSION_SECRET=replace_this_with_a_long_secure_random_string_in_production
 LOG_LEVEL=info
@@ -57,11 +72,8 @@ Before running the application, make sure to initialize the database schema:
 Alternatively, you can run the following commands manually:
 
 ```bash
-# Set your database connection string
-export DATABASE_URL="postgres://username:password@localhost:5432/kratom"
-
 # Generate migrations
-pnpm drizzle-kit generate
+pnpm db:generate
 
 # Apply migrations
 pnpm db:push
@@ -104,12 +116,35 @@ pnpm db:push
 
 2. Start the application using Docker Compose:
    ```bash
-   docker-compose up -d
+   # For development (with hot reloading)
+   pnpm docker:dev
+   
+   # For production
+   pnpm docker:prod
    ```
 
 3. The application will be available at http://localhost:5000
 
+4. To stop the containers:
+   ```bash
+   pnpm docker:down
+   ```
+
 ## 🧪 Development
+
+### Available Scripts
+
+- `pnpm dev` - Start the development server
+- `pnpm build` - Build the production application
+- `pnpm start` - Start the production application
+- `pnpm check` - Type-check the application
+- `pnpm db:push` - Apply database schema changes
+- `pnpm db:generate` - Generate database migrations
+- `pnpm db:studio` - Launch Drizzle Studio for database management
+- `pnpm migrate:dev` - Apply migrations in development
+- `pnpm docker:dev` - Start development containers
+- `pnpm docker:prod` - Start production containers
+- `pnpm docker:down` - Stop Docker containers
 
 ### Logging Levels
 
@@ -130,34 +165,23 @@ The application includes a health check endpoint at `/health` that reports the s
 curl http://localhost:5000/health
 ```
 
+### Database Management
+
+You can use Drizzle Studio to manage your database:
+
+```bash
+pnpm db:studio
+```
+
 ### Troubleshooting
 
-If you encounter a `relation "quiz_submissions" does not exist` error:
+If you encounter database connection issues:
 
-1. Make sure your database is properly initialized using the instructions in the Database Setup section
-2. For Docker installations, ensure the entrypoint script is running correctly
-3. You can manually fix by running `./init-db.sh` or applying migrations directly
-
-### Development Workflow
-
-1. Start the development server:
-   ```bash
-   pnpm dev
-   ```
-
-2. Access the application at http://localhost:5000
-
-### Building for Production
-
-```bash
-pnpm build
-```
-
-### Running in Production
-
-```bash
-pnpm start
-```
+1. Check that your database server is running and accessible
+2. Verify your connection parameters (either DATABASE_URL or individual parameters)
+3. Make sure your database is properly initialized using the instructions in the Database Setup section
+4. For Docker installations, ensure the entrypoint script is running correctly
+5. You can manually fix by running `./init-db.sh` or applying migrations directly
 
 ## 📁 Project Structure
 
@@ -176,13 +200,15 @@ kratom/
 │   ├── db.ts           # Database configuration
 │   ├── index.ts        # Server entry point
 │   ├── logger.ts       # Logging service
+│   ├── migrate.ts      # Database migration script
 │   ├── routes.ts       # API route definitions
 │   ├── storage.ts      # Data storage logic
 │   └── vite.ts         # Vite integration for serving the frontend
 ├── shared/             # Shared code between frontend and backend
 │   └── schema.ts       # Database schema and type definitions
 ├── migrations/         # Database migration files
-├── docker-compose.yml  # Docker configuration
+├── docker-compose.yml  # Docker configuration for development
+├── docker-compose.prod.yml # Docker configuration for production
 ├── Dockerfile          # Docker build instructions
 ├── init-db.sh          # Database initialization script
 └── package.json        # Project dependencies and scripts
@@ -194,17 +220,23 @@ The application uses PostgreSQL with Drizzle ORM. The main tables include:
 
 - **users**: User authentication information
 - **quiz_submissions**: Stores quiz responses and product recommendations
-  - Now includes fields for quality factors and blockchain preferences
+  - Includes fields for quality factors and blockchain preferences
 
-## 🔒 Authentication
+## 🔒 Security Features
 
-The application uses Passport.js with local strategy for authentication. User passwords are hashed for security.
+The application implements several security features:
+
+- **Helmet**: Secure HTTP headers to protect against common web vulnerabilities
+- **Rate Limiting**: Protection against brute force attacks and abuse
+- **Input Validation**: Strict schema validation for all API inputs using Zod
+- **Environment Validation**: Validation of all environment variables at startup
+- **Error Handling**: Comprehensive error handling with appropriate error responses
 
 ## 🚢 Deployment
 
 ### Server Requirements
 
-- Node.js (v18+)
+- Node.js (v20+)
 - PostgreSQL (v14+)
 - 1GB RAM (minimum)
 - 10GB Disk Space
@@ -212,7 +244,7 @@ The application uses Passport.js with local strategy for authentication. User pa
 ### Deployment Options
 
 1. **Docker Deployment**:
-   - Use the provided Docker Compose configuration
+   - Use the provided Docker Compose configuration for production
    - Suitable for most hosting environments
 
 2. **Manual Deployment**:
@@ -245,7 +277,3 @@ The application implements graceful shutdown handlers for SIGTERM and SIGINT sig
 ## 📝 License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 📧 Contact
-
-For questions or support, please contact [your-email@example.com](mailto:your-email@example.com).
