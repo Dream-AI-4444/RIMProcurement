@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: kratom-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: kratom
+    # ports:
+    #   - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - hanzo-network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: kratom-app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgres://postgres:postgres@postgres:5432/kratom
+    # ports:
+    #   - "5000:5000"
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.middlewares.well-known.headers.customrequestheaders.X-Forwarded-Proto=https"
+      - "traefik.http.middlewares.kratom-csp.headers.customResponseHeaders.Content-Security-Policy=connect-src 'self' https://kratom.hanzo.ai http://kratom.hanzo.ai;"
+      - "traefik.http.routers.kratom-http.rule=Host(`kratom.hanzo.ai`)"
+      - "traefik.http.routers.kratom-http.entrypoints=web"
+      - "traefik.http.routers.kratom-http.middlewares=well-known,kratom-csp,redirect-to-https"
+      - "traefik.http.routers.kratom-https.rule=Host(`kratom.hanzo.ai`)"
+      - "traefik.http.routers.kratom-https.entrypoints=websecure"
+      - "traefik.http.routers.kratom-https.middlewares=well-known,kratom-csp"
+      - "traefik.http.routers.kratom-https.tls.certresolver=letsencrypt"
+      - "traefik.http.services.kratom-service.loadbalancer.server.port=5000"
+    networks:
+      - hanzo-network
+
+volumes:
+  postgres-data:
+    name: kratom-postgres-data
+    driver: local
+
+networks:
+  hanzo-network:
+    external: true
