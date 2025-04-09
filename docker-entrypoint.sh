@@ -1,6 +1,9 @@
 #!/bin/sh
 set -e
 
+# Default migration script path
+: ${MIGRATION_SCRIPT:=pnpm migrate}
+
 # Wait for PostgreSQL to be ready
 echo "Waiting for PostgreSQL to be ready..."
 until pg_isready -h postgres -p 5432 -U postgres -d kratom; do
@@ -30,9 +33,12 @@ echo "DB_PORT: $DB_PORT"
 echo "DB_NAME: $DB_NAME"
 echo "DB_USER: $DB_USER"
 
-# Run database setup with explicit parameters
-echo "Running database migrations..."
-/app/fix-migration.sh
+# Run database migrations using pnpm
+echo "Running database migrations with command: $MIGRATION_SCRIPT"
+if ! $MIGRATION_SCRIPT; then
+  echo "Database migration failed"
+  exit 1
+fi
 
 # Start the application
 echo "Starting the application..."
