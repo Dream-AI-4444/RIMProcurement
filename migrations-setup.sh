@@ -5,8 +5,8 @@ set -e
 echo "Generating database migrations..."
 npx drizzle-kit generate --dialect=postgresql
 
-# Push schema changes to the database
+# Apply migrations using TypeScript migration
 echo "Applying migrations to the database..."
-node db-migrate.js
+npx tsx server/migrate.ts
 
 echo "Database setup complete!"

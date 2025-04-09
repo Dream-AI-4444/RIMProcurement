@@ -2,7 +2,6 @@
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import pg from 'pg';
-import * as schema from './shared/schema.js';
 import { fileURLToPath } from 'url';
 import { dirname, resolve } from 'path';
 
@@ -31,8 +30,8 @@ async function runMigrations() {
       client.release();
     });
     
-    // Setup drizzle with our schema
-    const db = drizzle(pool, { schema });
+    // Since we can't directly import the TypeScript schema,
+    // we'll use the SQL-based migration approach which doesn't require the schema
     
     // Define migrations options
     const migrationsFolder = resolve(__dirname, 'migrations');
@@ -40,6 +39,10 @@ async function runMigrations() {
     
     // Run migrations
     console.log('Running migrations...');
+    
+    // Use database-native driver for migrations
+    const db = drizzle(pool);
+    
     await migrate(db, {
       migrationsFolder,
       migrationsTable: '__drizzle_migrations',

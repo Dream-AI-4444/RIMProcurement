@@ -9,13 +9,14 @@ until pg_isready -h postgres -p 5432 -U postgres; do
 done
 echo "PostgreSQL is up - executing command"
 
-# Setting up migrations
-echo "Setting up migrations..."
+# Setting up migrations directory
+echo "Setting up migrations directory..."
 mkdir -p migrations
 
-# Apply migrations using the programmatic approach (more reliable in Docker)
-echo "Applying migrations to database..."
-node db-migrate.js
+# Run TypeScript-based migration
+echo "Running database migrations using TypeScript..."
+# Use tsx to run the TypeScript migration file directly
+tsx server/migrate.ts
 
 # Start the application
 echo "Starting the application..."
